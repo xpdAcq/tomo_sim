@@ -207,6 +207,11 @@ from skimage import draw
 import bluesky.plans as bp
 
 RE = RunEngine()
+
+from bluesky.utils import ProgressBarManager
+
+RE.waiting_hook = ProgressBarManager()
+
 viz_rr = create_rr()
 db_rr = create_db_rr(
     '/media/christopher/DATA/Research/Columbia/data/tomo_sim_db')
@@ -225,6 +230,7 @@ RE.md = dict(calibration_md=cal_params,
              bt_wavelength=.1899,
              analysis_stage='raw')
 
+
 # important config things!
 # TODO: run as pchain
 pixel_size = .0002
@@ -232,9 +238,14 @@ holder_size = 11e-3  # m
 array_size = int(holder_size/pixel_size) + 1
 arr = np.zeros((array_size,)*2)
 
+# 1 mm capilary inside {holder_size} mm holder offset near the front
+arr[1:7, array_size // 2 - 3:array_size // 2 + 3] = 1
+'''
+# important config things!
+# TODO: run as pchain
 # 10 mm square inside {holder_size} mm holder offset near the front
 arr[5:-5, 5:-5] = 1
-
+'''
 phases = [{"func": f, "map": arr}]
 td = take_data(t, r, phases, pixel_size, calibration)
 
@@ -258,13 +269,13 @@ RE(
         r,
         0,
         180,
-        19,
+        181,
         t,
         -holder_size/2.,
         holder_size/2.,
         array_size,
         True,
-        md=dict(sample_name='Ni_10mm_block',
+        md=dict(sample_name='Ni_11mm',
                 tomo={'rotation': 'theta',
                       'translation': 'x',
                       'center': array_size/2.,
